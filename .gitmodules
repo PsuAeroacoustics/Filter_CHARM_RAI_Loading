@@ -1,0 +1,10 @@
+[submodule "dependencies"]
+	path = dependencies/pyWopwop
+	url = https://github.com/OpenWopwop/pyWopwop.git
+	branch = dwMods
+[submodule "dependencies"]
+	path = dependencies/resonator
+	url = https://github.com/DanWeitsman/resonator.git
+[submodule "dependencies"]
+	path = dependencies/pyPostAcs
+	url = https://github.com/DanWeitsman/pyPostAcs.git
