@@ -1,0 +1,28 @@
+{   
+    // circumfrential extents over which the treatment is applied [deg] - 0 deg is aligned with 
+    "phi_extents": [0,180], 
+    // nondimensionalized spanwise extents over which the treatment is applied 
+    "r_extents": [0.025,0.975],
+    // total number of resonators set to none to filter all the points that fall within the specified extents. 
+    "N_res": null,
+    // number of radial impedance patches 
+    "N_r":5,
+    // number of circumferential impedance patches
+    "N_phi":3,
+    // minimum and maximum radius of the resonators [m] 
+    "a_bounds": [0.00085,0.00085],
+    // minimum and maximum length of the resonators [m] 
+    "l_bounds": [0.0005,0.01],
+    //open area ratio of the patches
+    "OAR": 0.15,
+    // set to true to stagger the patches
+    "staggered": false,
+    // radius of resonators [m]
+    "a": 0.00085,
+    // lengths of resonators [m] of each patch - specified as a nested list where each element corresponds to each unique patch
+    "l": [[0.0296554984591977]],
+    // parameterized variables that specify the radial distribution of the patches -  only requered if staggered is set to true. The number of elements should correspond to "N_phi".
+    "dist": [[],[],[]],
+    // inputs for the optimizer which vary depending on N_patches and if they are staggered 
+    "x0": [ "${a}", "${l}"]
+}
