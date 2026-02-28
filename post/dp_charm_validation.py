@@ -2,12 +2,16 @@
 
 import os
 import numpy as np
-from dependencies.pyWopwop.wopwop import *  
-from dependencies.pyWopwop.wopwop_io import *  
-from dependencies.pyPostAcs.pyPostAcsFun import *
-from extract_loading_charm import extract_loading
-from scipy.integrate import solve_ivp,cumulative_trapezoid
-from post.plot_styles import *
+import sys
+sys.path.insert(0,os.path.join(os.path.dirname(os.path.dirname(__file__)),'dependencies'))
+
+from pyWopwop.wopwop import *  
+from pyWopwop.wopwop_io import *  
+
+from pyPostAcs.pyPostAcsFun import *
+# from extract_loading_charm import extract_loading
+import plot_styles
+
 
 
 default_colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
@@ -16,7 +20,7 @@ linestyle = ['-',':','--','-.']
 #%%
 
 exp_dir ='/Users/danielweitsman/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/RES_BLADE_9_25/rotor_airframe_data/10_6/'
-exp_cases = ['kde_t1775_bl_d05_m90_r2','kde_t1775_mdof_d05_m90_r2']
+exp_cases = ['kde_t1775_bl_dn05_m90_r2','kde_t1775_sdof_dn05_m90_r2']
 exp_mics = [8,4,0]
 # x,y,z coordinates of center mic which is approximately aligned with the rod
 center_mic_coord = np.asarray([ 0.18097501,  -1.524     , -0.04064   ])
@@ -24,7 +28,7 @@ center_mic_ind = 4
 
 validate = True
 charm_dir = "/Users/danielweitsman/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/charm/rotor_af_interaction/"
-charm_cases = ['quickROD_NPSI128/quickROD.1PSU-WOPWOP','quickROD_MDOF_GEOM_OAR15/quickROD.1PSU-WOPWOP']
+charm_cases = ['quickROD_DN05_IAERO1/quickROD.1PSU-WOPWOP','quickROD_DN05_SDOF_GEOM_OAR15/quickROD.1PSU-WOPWOP']
 charm_mics = [8,4,0]
 charm_loading_fname = ['loading0200.dat','loading0200_sdof_geom_oar15.dat']
 c0 = 340
@@ -228,7 +232,7 @@ plt.subplots_adjust(left=0.125,right = 0.95,top = 0.95,bottom=0.125,hspace = 0.3
 for mic_itr in range(len(args.mics)):
     ax[mic_itr,0].plot(exp_data[exp_cases[0]]['t']/exp_data[exp_cases[0]]['t'][-1],np.roll(dp[:,mic_itr],-np.round(t_shift[1]/exp_data[exp_cases[1]]['t'][1])))
     ax[mic_itr,0].plot(charm_data[charm_cases[0]]['function_values'][mic_itr,0,:,0]/charm_data[charm_cases[0]]['function_values'][mic_itr,0,-1,0],np.roll((charm_data[charm_cases[1]]['function_values']-charm_data[charm_cases[0]]['function_values'])[mic_itr,0,:,-1],-114))
-    ax[mic_itr,0].set(xlim = [0,1],ylim = [-.5,.5],title =title[mic_itr])
+    ax[mic_itr,0].set(xlim = [0,1],ylim = [-4,4],title =title[mic_itr])
     if mic_itr !=len(args.mics)-1:
         ax[mic_itr,0].set_xticklabels([])
     ax[mic_itr,0].grid()

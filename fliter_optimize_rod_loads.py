@@ -3,7 +3,7 @@ import os
 import argparse
 import json5
 from help_funcs import *
-
+from plot_results import *
 #%%
 
 def main():
@@ -58,12 +58,32 @@ def main():
         default=False,
         required=False
     )
-
+    parser.add_argument(
+          '-o','--observers',                
+        nargs='+',
+        help="Indicies of observers to plot.",
+		required=False,
+        type=int,
+    )
+    parser.add_argument(
+        "-mag",
+        action='store_true',
+        help="Filter the rod loads only with the magnitude response of the impedance patches.",
+        default=False,
+        required=False
+    )
+    parser.add_argument(
+        "-phase",
+        action='store_true',
+        help="Filter the rod loads only with the phase response of the impedance patches.",
+        default=False,
+        required=False
+    )
     args = parser.parse_args()
 
     saved_params = {'case_dir':os.getcwd()}
-    if os.path.exists(os.path.join(saved_params['case_dir'],'saved_params.h5')):
-        saved_params.update(read_results_from_h5(saved_params['case_dir']))
+    # if os.path.exists(os.path.join(saved_params['case_dir'],'saved_params.h5')):
+    #     saved_params.update(read_results_from_h5(saved_params['case_dir']))
     saved_params.update(vars(args).copy())
 
     with open(os.path.join(saved_params['case_dir'],saved_params['resonator_fname']), "r") as f:
@@ -72,6 +92,15 @@ def main():
     import_charm_data(saved_params,res_params)
     process_patch_geometry(saved_params,res_params)
     filter_rod_loads(saved_params,res_params)
+
+    if saved_params['observers'] is None:
+         saved_params['observers'] = np.arange(len(saved_params['function_values']))
+    
+    if saved_params['plot']:
+        [f(saved_params,res_params) for f in [plot_geom]]
+
+    # removes the loading and geometry objects from saved parameters so that they are not saved redundently in saved_params.h5 
+    [saved_params.pop(key, None) for key in ['loading','loading_baseline','geometry']]
 
     write_results_to_h5(saved_params,res_params)
     with open(os.path.join(saved_params['case_dir'],saved_params['resonator_fname']), "w") as f:
