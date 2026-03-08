@@ -160,8 +160,8 @@ plt.subplots_adjust(left=0.125,right = 0.95,top = 0.95,bottom=0.125,hspace = 0.3
 for mic_itr in range(len(args.mics)):
     for case_itr,case in enumerate(exp_cases):
         ax[mic_itr,0].plot(exp_data[case]['t']/exp_data[case]['t'][-1],exp_data[case]['xn_avg'][mic_itr],c=np.roll(default_colors,-case_itr)[0], linestyle=np.roll(linestyle,-case_itr)[0], label=case)
-    # for case_itr,case in enumerate(charm_cases):
-    #     ax[mic_itr,0].plot(charm_data[case]['function_values'][mic_itr,0,:,0]/charm_data[case]['function_values'][mic_itr,0,-1,0],np.roll(charm_data[case]['function_values'][mic_itr,0,:,-1],-114),c=np.roll(default_colors,-case_itr)[3])
+    for case_itr,case in enumerate(charm_cases):
+        ax[mic_itr,0].plot(charm_data[case]['function_values'][mic_itr,0,:,0]/charm_data[case]['function_values'][mic_itr,0,-1,0],np.roll(charm_data[case]['function_values'][mic_itr,0,:,-1],-114),c=np.roll(default_colors,-case_itr)[3])
     ax[mic_itr,0].set(xlim = [0,1],ylim = [None,None],title =title[mic_itr])
     if mic_itr !=len(args.mics)-1:
         ax[mic_itr,0].set_xticklabels([])
@@ -182,50 +182,6 @@ ax[int(len(args.mics)/2),1].set_ylabel(r'SPL, dB \ (re: 20$\mathrm{\mu}$Pa)')
 fig.legend(leg_labs,ncol = 2,loc='lower center',bbox_to_anchor=(.5, -0.01))
 plt.savefig(os.path.join(charm_dir,f'p_tseries_psd_{exp_cases[1]}.pdf'),format = 'pdf')
 
-fig, ax = plt.subplots(len(args.mics),2,figsize = figsize)
-plt.subplots_adjust(left=0.125,right = 0.95,top = 0.95,bottom=0.125,hspace = 0.3,wspace = 0.3)
-for mic_itr in range(len(args.mics)):
-    ax[mic_itr,0].plot(exp_data[exp_cases[0]]['t']/exp_data[case]['t'][-1],exp_data[exp_cases[0]]['xn_avg'][mic_itr], linestyle=linestyle[0])
-    ax[mic_itr,0].plot(charm_data[charm_cases[0]]['function_values'][mic_itr,0,:,0]/charm_data[charm_cases[0]]['function_values'][mic_itr,0,-1,0],np.roll(charm_data[charm_cases[0]]['function_values'][mic_itr,0,:,-1],-114),linestyle=linestyle[1])
-    ax[mic_itr,0].set(xlim = [0,1],ylim = [None,None],title =title[mic_itr])
-    if mic_itr !=len(args.mics)-1:
-        ax[mic_itr,0].set_xticklabels([])
-    ax[mic_itr,0].grid()
-ax[-1,0].set(xlabel = 'Rev. Fraction')
-ax[int(len(args.mics)/2),0].set(ylabel = 'P [Pa]')
-for mic_itr in range(len(args.mics)):
-    markerline, stemlines, baseline = ax[mic_itr,1].stem(exp_data[exp_cases[0]]['f_tonal'],10*np.log10(exp_data[exp_cases[0]]['pxx_tonal'][mic_itr]*np.diff(exp_data[case]['f_tonal'][:2])[0]/20e-6**2))
-    stemlines.set(color = default_colors[0])
-    markerline.set(color = default_colors[0])
-    markerline, stemlines, baseline = ax[mic_itr,1].stem(charm_data[charm_cases[0]]['f'],10*np.log10(charm_data[charm_cases[0]]['pxx'][mic_itr,0,:,-1]*np.diff(charm_data[charm_cases[0]]['f'][:2])[0]/20e-6**2))
-    stemlines.set(color = default_colors[1])
-    markerline.set(color = default_colors[1])
-    ax[mic_itr,1].set(ylim = [0,90],xscale = 'linear',xlim = [100,10e3],title =title[mic_itr])
-    if mic_itr !=len(args.mics)-1:
-        ax[mic_itr,1].set_xticklabels([])
-    ax[mic_itr,1].grid()
-ax[-1,1].set_xlabel('Frequency [Hz]')
-ax[int(len(args.mics)/2),1].set_ylabel(r'SPL, dB \ (re: 20$\mathrm{\mu}$Pa)')
-fig.legend(['Measured','Predicted'],ncol = 2,loc='lower center',bbox_to_anchor=(.5, -0.01))
-
-fig, ax = plt.subplots(len(args.mics),1,figsize = figsize)
-plt.subplots_adjust(left=0.1,right = 0.95,top = 0.95,bottom=0.125,hspace = 0.3,wspace = 0.3)
-for mic_itr in range(len(args.mics)):
-    markerline, stemlines, baseline = ax[mic_itr].stem(exp_data[exp_cases[0]]['f_tonal'],10*np.log10(exp_data[exp_cases[0]]['pxx_tonal'][mic_itr]*np.diff(exp_data[exp_cases[0]]['f_tonal'][:2])[0]/20e-6**2))
-    stemlines.set(color = default_colors[0])
-    markerline.set(color = default_colors[0])
-    markerline, stemlines, baseline = ax[mic_itr].stem(charm_data[charm_cases[0]]['f'],10*np.log10(charm_data[charm_cases[0]]['pxx'][mic_itr,0,:,-1]*np.diff(charm_data[charm_cases[0]]['f'][:2])[0]/20e-6**2))
-    stemlines.set(color = default_colors[1])
-    markerline.set(color = default_colors[1])
-    ax[mic_itr].set(ylim = [0,90],xscale = 'linear',xlim = [100,5e3],title =title[mic_itr])
-    if mic_itr !=len(args.mics)-1:
-        ax[mic_itr].set_xticklabels([])
-    ax[mic_itr].grid()
-ax[-1].set_xlabel('Frequency [Hz]')
-ax[int(len(args.mics)/2)].set_ylabel(r'SPL, dB \ (re: 20$\mathrm{\mu}$Pa)')
-fig.legend(['Measured','Predicted'],ncol = 2,loc='lower center',bbox_to_anchor=(.5, -0.01))
-plt.savefig(os.path.join(charm_dir,f'psd_{os.path.dirname(charm_cases[1])}.pdf'),format = 'pdf')
-
 
 fig, ax = plt.subplots(len(args.mics),2,figsize = figsize)
 plt.subplots_adjust(left=0.125,right = 0.95,top = 0.95,bottom=0.125,hspace = 0.3,wspace = 0.3)
@@ -245,7 +201,7 @@ for mic_itr in range(len(args.mics)):
     markerline, stemlines, baseline = ax[mic_itr,1].stem(f_charm,10*np.log10(dpxx_charm[mic_itr,0,:,-1]*np.diff(f_charm[:2])[0]/20e-6**2))
     stemlines.set(color = default_colors[1])
     markerline.set(color = default_colors[1])
-    ax[mic_itr,1].set(ylim = [0,100],xscale = 'linear',xlim = [100,5e3],title =title[mic_itr])
+    ax[mic_itr,1].set(ylim = [0,100],xscale = 'log',xlim = [100,5e3],title =title[mic_itr])
     if mic_itr !=len(args.mics)-1:
         ax[mic_itr,1].set_xticklabels([])
     ax[mic_itr,1].grid()

@@ -3,7 +3,6 @@
 import matplotlib as mpl
 mpl.rcParams.update({
     'text.usetex': True,
-
     # Font family must be serif for lmodern
     'font.family': 'serif',
 
@@ -20,5 +19,6 @@ mpl.rcParams.update({
         \usepackage{lmodern}
         \usepackage{textcomp}
         \usepackage{microtype}
+        \usepackage{bm}
     '''
     })

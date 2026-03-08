@@ -54,7 +54,7 @@ def write_results_to_h5(saved_params,res_params):
                 dict_to_h5(subgroup, value)
             else:
                 h5_group.create_dataset(key, data=value)
-
+    saved_params.update({'res_params':res_params})
     with h5py.File(os.path.join(saved_params['case_dir'], 'saved_params.h5'), 'w') as f:
         dict_to_h5(f, saved_params)
 
@@ -129,6 +129,8 @@ def process_patch_geometry(saved_params,res_params):
     point_filt_ind = selected_ind[sorted_ind][ind.reshape(N_patches_tot,N_r_patch*N_phi_patch)]
     patch_filt_ind = np.ones(N_patches_tot,dtype=bool)
 
+
+
     saved_params.update({'phi':phi,'r':r,'V':V,'patch_types':patch_types,'point_filt_ind':point_filt_ind,'A_patch':A_patch,'A_s':A_s,'patch_filt_ind':patch_filt_ind,'N_r_patch':N_r_patch,'N_phi_patch':N_phi_patch,'N_patches_tot':N_patches_tot,'N_patches':N_patches,'N_pnts_r':N_pnts_r,'N_pnts_phi':N_pnts_phi})
 
 def flatten_list(x):
@@ -186,6 +188,37 @@ def apply_treatment(saved_params,res_params):
         saved_params['patch_filt_ind'] = get_res_dist(res_params)
 
     get_Z_smeared(saved_params,res_params)
+
+    # fig,ax = plt.subplots(2,1, figsize = (3,3))
+    # plt.subplots_adjust(bottom = 0.15,left = 0.175,top =0.95,right = 0.95)
+    # ax[0].plot(saved_params['f'],np.real(saved_params['Z_smeared']))
+    # ax[1].plot(saved_params['f'],np.imag(saved_params['Z_smeared']))
+    # ax[0].set_xticklabels([])
+    # ax[0].set_ylabel(r'$\mathrm{Resistance}, \ \overline{\theta}$')
+    # ax[0].set_xlim([0,5e3])
+    # ax[0].set_ylim([0,10])
+    # ax[0].grid()
+    # ax[-1].set_ylabel(r'$\mathrm{Reactance}, \ \overline{\chi}$')
+    # ax[-1].set_xlabel(r'Frequency [Hz]')
+    # ax[-1].grid()
+    # ax[-1].set_xlim([0,5e3])
+    # ax[-1].set_ylim([-5, 5])
+    # R = (saved_params['Z_smeared']-1)/(saved_params['Z_smeared']+1)
+    # fig,ax = plt.subplots(2,1, figsize = (3,3))
+    # plt.subplots_adjust(bottom = 0.15,left = 0.175,top =0.95,right = 0.95)
+    # ax[0].plot(saved_params['f'],np.abs(R))
+    # ax[1].plot(saved_params['f'],np.angle(R))
+    # ax[0].set_xticklabels([])
+    # ax[0].set_ylabel(r'$\mathrm{Resistance}, \ \overline{\theta}$')
+    # ax[0].set_xlim([0,5e3])
+    # # ax[0].set_ylim([0,10])
+    # ax[0].grid()
+    # ax[-1].set_ylabel(r'$\mathrm{Reactance}, \ \overline{\chi}$')
+    # ax[-1].set_xlabel(r'Frequency [Hz]')
+    # ax[-1].grid()
+    # ax[-1].set_xlim([0,5e3])
+    # # ax[-1].set_ylim([-5, 5])
+
 
     filt_resp = get_filt_resp(saved_params['Z_smeared'])
     if saved_params['mag']:

@@ -99,12 +99,13 @@ def main():
     if saved_params['plot']:
         [f(saved_params,res_params) for f in [plot_geom]]
 
-    # removes the loading and geometry objects from saved parameters so that they are not saved redundently in saved_params.h5 
-    [saved_params.pop(key, None) for key in ['loading','loading_baseline','geometry']]
-
-    write_results_to_h5(saved_params,res_params)
+    
     with open(os.path.join(saved_params['case_dir'],saved_params['resonator_fname']), "w") as f:
         json5.dump(res_params,f,indent=4)
+    
+    # removes the loading and geometry objects from saved parameters so that they are not saved redundently in saved_params.h5 
+    [saved_params.pop(key, None) for key in ['loading','loading_baseline','geometry']]
+    write_results_to_h5(saved_params,res_params)
 
 if __name__ == "__main__":
 	main()
