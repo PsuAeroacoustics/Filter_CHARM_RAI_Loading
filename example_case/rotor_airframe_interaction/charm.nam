@@ -1,0 +1,186 @@
+!!! Created by CHARM
+!!! Date: 20251212   Time: 12:06:45
+!!! Weight =    36.95    
+ &EnvironmentIn
+    nbSourceContainers   =  1   ! number of aircraft
+    nbObserverContainers =  1   ! one observer grid
+  spectrumFlag =.false.  ! output acoustic spectrum
+  SPLdBFLAG =.false.     ! in SPL dB - narrowband 
+  SPLdBAFlag =.false.    ! and A-weighted SPL in dBA
+  OASPLdBFlag =.false.   ! output OASPL in dB
+  OASPLdBAFlag =.false.  ! output A-weighted OASPLdBA
+  PNLTFlag = .false.    ! output PNLT
+  SELFlag  = .false.    ! output SEL
+  EPNLFlag = .false.    ! output EPNL
+  thicknessNoiseFlag =.true. ! output thickness noise
+  loadingNoiseFlag =.true.   ! output loading noise
+  acousticPressureFlag =.true. ! output press history
+   totalNoiseFlag        =.true.   !  total noise
+   debugLevel            =           0
+   ASCIIOutputFlag       = .true.  ! grid and function file output in ASCII
+   sigmaflag = .false.   ! no sigma surfaces
+   loadingSigmaFlag    = .true.
+   pressureSigmaFlag   = .true.
+   normalSigmaFlag     = .true.
+   observerSigmaflag   = .true.
+ /
+ &EnvironmentConstants
+   rho =   1.225000    
+   c   =   343.0000    
+ /
+ &ObserverIn
+   Title     ='Observers'  ! observer title
+   attachedTo = 'Aircraft'   ! observers move with Aircraft
+   fileName = 'charmobs.inp' ! file with observer locations
+   nt =        512         ! number of times
+   highPassFrequency = 355.706535257869
+   lowPassFrequency = 2265.28898769485
+   tmin =  0.0000000E+00
+   tmax =  1.0682964E-02
+ /
+ &ContainerIn
+   Title ='Aircraft'  ! first container is Aircraft
+   nbContainer =           2
+   nbBase = 1   ! one COB - aircraft velocity
+   dTau =   8.3460654E-05   ! TWOPI/(NPSI*   588.1500     )
+ /
+ &CB
+   Title ='Aircraft motion'
+   TranslationType = 'KnownFunction'
+    AH =       0.000       0.000       0.000   ! acceleration
+    VH =       0.000       0.000       0.000   ! velocity
+    Y0 =       0.000       0.000       0.000   ! position
+ /
+ &ContainerIn
+  Title = 'Rotor 1'
+  nbContainer =  4 ! 2 per blade: thcknss & loading
+  nbBase = 4  ! 4 changes of base for the rotor follow
+ /
+ &CB
+   Title ='Hub Translation'
+   TranslationType = 'TimeIndependent'
+   TranslationValue =      0.00000,     0.00000,     0.04064
+ /
+ &CB
+   Title ='Hub Pitch'
+   AxisType = 'TimeIndependent'
+   AngleType = 'TimeIndependent'
+   AxisValue =  0.0, 1.0, 0.0
+   AngleValue =      0.00000
+ /
+ &CB
+   Title ='Hub Roll'
+   AxisType = 'TimeIndependent'
+   AngleType = 'TimeIndependent'
+   AxisValue =  1.0, 0.0, 0.0
+   AngleValue =      0.00000
+ /
+ &CB
+   Title ='Rotation'
+   rotation = .true.
+   AngleType = 'KnownFunction'
+   Omega =  -588.15002  ! rotation rate (rps)
+   Psi0 =     0.00000  ! psi offset (radians)
+   AxisValue =  0.0, 0.0,-1.0
+ /
+ &ContainerIn
+   Title = 'Thickness Blade 1'
+   patchGeometryFile = 'bsurface01.dat'
+   periodicKeyOffset =      0.00000 ! degrees
+   nbBase = 1    ! One change of base
+ /
+ &CB
+   Title ='Initial azimuth angle'
+   AxisType = 'TimeIndependent'
+   AngleType = 'TimeIndependent'
+   AxisValue =  0.0, 0.0, 1.0
+   AngleValue =  -3.141593    
+ /
+ &ContainerIn
+   Title = 'Loading Blade 1'
+   patchGeometryFile = 'geometry0100.dat'
+   patchLoadingFile = 'loading0100.dat'
+   periodicKeyOffset =      0.00000 ! degrees
+   nbBase = 1    ! One change of base
+ /
+ &CB
+   Title ='Initial azimuth angle'
+   AxisType = 'TimeIndependent'
+   AngleType = 'TimeIndependent'
+   AxisValue =  0.0, 0.0, 1.0
+   AngleValue =  -3.141593    
+ /
+ &ContainerIn
+   Title = 'Thickness Blade 2'
+   patchGeometryFile = 'bsurface01.dat'
+   periodicKeyOffset =    180.00000 ! degrees
+   nbBase = 1    ! One change of base
+ /
+ &CB
+   Title ='Initial azimuth angle'
+   AxisType = 'TimeIndependent'
+   AngleType = 'TimeIndependent'
+   AxisValue =  0.0, 0.0, 1.0
+   AngleValue =  0.0000000E+00
+ /
+ &ContainerIn
+   Title = 'Loading Blade 2'
+   patchGeometryFile = 'geometry0100.dat'
+   patchLoadingFile = 'loading0100.dat'
+   periodicKeyOffset =    180.00000 ! degrees
+   nbBase = 1    ! One change of base
+ /
+ &CB
+   Title ='Initial azimuth angle'
+   AxisType = 'TimeIndependent'
+   AngleType = 'TimeIndependent'
+   AxisValue =  0.0, 0.0, 1.0
+   AngleValue =  0.0000000E+00
+ /
+ &ContainerIn
+  Title = 'Body 1'
+  nbContainer = 1 ! 1 loading; no thickness
+  nbBase = 4  ! 4 changes of base for body follow
+ /
+ &CB
+   Title ='Hub Translation'
+   TranslationType = 'TimeIndependent'
+   TranslationValue =      0.00000,     0.00000,     0.00000
+ /
+ &CB
+   Title ='Hub Pitch'
+   AxisType = 'TimeIndependent'
+   AngleType = 'TimeIndependent'
+   AxisValue =  0.0, 1.0, 0.0
+   AngleValue =      0.00000
+ /
+ &CB
+   Title ='Hub Roll'
+   AxisType = 'TimeIndependent'
+   AngleType = 'TimeIndependent'
+   AxisValue =  1.0, 0.0, 0.0
+   AngleValue =      0.00000
+ /
+ &CB
+   Title ='Rotation'
+   rotation = .true.
+   AngleType = 'KnownFunction'
+   Omega =     0.00000  ! rotation rate (rps)
+   Psi0 =     0.00000  ! psi offset (radians)
+   AxisValue =  0.0, 0.0,-1.0
+ /
+ &ContainerIn
+   Title = 'Loading Blade 1'
+   patchGeometryFile = 'geometry0200.dat'
+   patchLoadingFile = 'loading0200_mod.dat'
+   periodicKeyOffset =      0.00000 ! degrees
+   nbBase = 1    ! One change of base
+ /
+ &CB
+   Title ='Initial azimuth angle'
+   AxisType = 'TimeIndependent'
+   AngleType = 'TimeIndependent'
+   AxisValue =  0.0, 0.0,-1.0
+   AngleValue = 0.0
+ /
+ 

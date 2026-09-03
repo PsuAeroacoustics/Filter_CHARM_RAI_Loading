@@ -2,10 +2,7 @@
 import numpy as np
 from scipy.fft import fft,ifft
 from scipy.optimize import Bounds
-import dependencies.resonator.resonator as res
-
-#%%
-
+import dependencies.pyResonator.resonator as res
 
 
 def get_res_dist(res_params):

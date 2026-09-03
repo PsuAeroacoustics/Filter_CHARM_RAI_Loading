@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-import os
+
 import argparse
 import json5
 from help_funcs import *
 from plot_results import *
+
 #%%
 
 def main():
@@ -26,7 +27,7 @@ def main():
         "-resonator_fname",
         type= str,
         required=False,
-		default="sdof_geom_params.json5",
+		default="res_params.json5",
 		help="Name of json5 file that specifies the impedance patch parameters.'",
     )
     parser.add_argument(
@@ -97,7 +98,7 @@ def main():
          saved_params['observers'] = np.arange(len(saved_params['function_values']))
     
     if saved_params['plot']:
-        [f(saved_params,res_params) for f in [plot_geom]]
+        [f(saved_params,res_params) for f in [plot_ptseries,plot_psd_ptseries,plot_geom]]
 
     
     with open(os.path.join(saved_params['case_dir'],saved_params['resonator_fname']), "w") as f:

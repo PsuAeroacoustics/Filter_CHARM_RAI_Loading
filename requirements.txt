@@ -1,0 +1,8 @@
+cmap>=0.7.2
+cmcrameri>=1.9
+f90nml>=1.4.5
+h5py>=3.14.0
+json5>=0.13.0
+matplotlib>=3.11.1
+numpy
+scipy>=1.18.1

@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
+import os
+import numpy as np
 import post.plot_styles
 import matplotlib.pyplot as plt
-import numpy as np
-import os
-from scipy.interpolate import griddata
 from scipy.signal import welch
 from matplotlib.colors import BoundaryNorm
-from matplotlib import cm
+import matplotlib as mpl
 from matplotlib.cm import ScalarMappable
-
 
 default_colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
 linestyle = ['-',':','--','-.',':']
@@ -86,7 +84,7 @@ def plot_geom(saved_params,res_params):
     bounds[0]  = patch_vals[0] - (bounds[1] - patch_vals[0])
     bounds[-1] = patch_vals[-1] + (patch_vals[-1] - bounds[-2])
 
-    cmap = cm.get_cmap('inferno', len(patch_vals))
+    cmap = mpl.colormaps.get_cmap('inferno').resampled(len(patch_vals))
     norm = BoundaryNorm(bounds, cmap.N)
     sm = ScalarMappable(norm=norm, cmap=cmap)
     sm.set_array([])  # required for older matplotlib

@@ -1,31 +1,22 @@
-# charm_post
+# CDI CHARM Rotor-Airframe Interaction Noise Utility 
 
-Scripts for analyzing CDI CHARM rotor and rod-loading output with OpenWOPWOP.
-The primary workflow models acoustic resonators over selected geometry patches,
-filters the loading in the frequency domain, and compares untreated and treated
-acoustic predictions.
+This code was developed to assess the effectiveness of using open-closed resonator cavities embedded in the airframe to reduce rotor-airframe interaction noise. CDI CHARM was used as the aerodynamics solver, but this methodology is general so it can be adapted for other programs. It only requires a complete PSU-WOPWOP case (namelist, functional loading files, and geometry patch). 
 
-The repository is organized as a collection of research scripts rather than an
-installable Python package. In addition to the primary treatment workflow, it
-contains resonator models, OpenWOPWOP readers and writers, plotting utilities,
-validation scripts, and parameter-sweep helpers.
-
-## Contents
-
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [Basic workflow](#basic-workflow)
-- [Configuration](#configuration)
-- [Command-line reference](#command-line-reference)
-- [Files produced](#files-produced)
-- [Repository guide](#repository-guide)
-- [Troubleshooting](#troubleshooting)
+This workflow reads the non-compact loading data on the surface of the airframe, which in this case is taken to be a cylindrical rod. Modifies the loads in accordance with the estimated acoustic response (complex reflection coefficient) of the resonator cavities, and writes out the modified loading file. It then runs PSU-WOPWOP and imports and plots the results. The workflow also includes a differential evolution global optimizer (scipy) to determine the dimensions of the resonators cavities that yield the maximum predicted noise reduction. All this functionality is controlled through the CLI. 
 
 ## Requirements
 
-### Python
+This code utilizes two other repositories that need to be setup and installed first. These are provided as git submodules and are largely transparent to the user. If you are cloning a fresh repository run:
+```
+	git clone --recurse-submodules https://github.com/DanWeitsman/rotor_gust_interaction
+```
 
-The scripts use Python 3 and the following packages:
+If the repository is already cloned, but submodules were not cloned, run the following command to acquire the submodules:
+```
+	git submodule update --init --recursive
+```
+
+In addition the following dependencies are required. 
 
 - `numpy`
 - `scipy`
@@ -33,21 +24,32 @@ The scripts use Python 3 and the following packages:
 - `h5py`
 - `json5`
 - `f90nml`
+- A separately installed PSU-WOPWOP executable for running acoustic cases
 
-The bundled [pyWopwop environment](dependencies/pyWopwop/environment.yml)
-provides `matplotlib`, `numpy`, and `f90nml`; install the remaining packages in
-the same environment. `json5` is required by the main optimization/filtering
-script, while `scipy` and `h5py` are used throughout the repository.
+These can be installed as follows
+```bash
+pip install -r requirements.txt
+```
 
-### OpenWOPWOP
+Before running the script, the local path to the location of the repository containing `fliter_optimize_rod_loads.py` must be added to your system PATH environment variable so that the command can be executed from any PSU-WOPWOP case directory. This can be accomplished by adding the following lines to your `.bashrc` or `.zshrc` file:
 
-The treatment workflow invokes the command-line executable `wopwop3`. It must be
-installed and available on `PATH`. A case must also contain a valid OpenWOPWOP
-`cases.nam` file and the files referenced by that case. OpenWOPWOP is not bundled
-with this repository.
+```bash
+export PATH="/path/to/fliter_optimize_rod_loads.py:$PATH"
+```
 
-For parallel execution, `mpirun` must also be available and able to launch
-`wopwop3`.
+After updating the file, reload your shell configuration:
+
+```bash
+source ~/.bashrc
+```
+or 
+```bash
+source ~/.zshrc
+```
+
+The submodules in the `dependencies` folder also needs to be added as a PATH variable. 
+
+This only needs to be done once. Thereafter, pyPostAcs.py can be executed from any directory containing the desired acoustic datasets.
 
 ### Input data
 
@@ -58,117 +60,24 @@ Run the main script from an OpenWOPWOP case directory containing at least:
 - A `cases.nam` OpenWOPWOP namelist that references the loading file to analyze.
 - A JSON5 resonator configuration file.
 
-The bundled `pyWopwop` readers read these binary files as big-endian data. Keep
-the case files together and run the workflow from the case directory so relative
-paths in `cases.nam` resolve correctly.
 
-## Installation
+### Packaged example case
 
-From the repository root, create or activate a Python environment and install the
-Python dependencies:
+The repository includes a complete rotor-airframe-interaction example in
+[example_case/rotor_airframe_interaction](example_case/rotor_airframe_interaction).
+It contains the PSU-WOPWOP namelists, baseline loading and geometry files,
+an example resonator configuration in `res_params.json5`,
+and saved acoustic result files. The case is also useful for inspecting the
+expected input and output file layout before preparing a new case.
 
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install --upgrade pip
-python -m pip install numpy scipy matplotlib h5py json5 f90nml
-```
+The code reads in the non-compact loading data on the surface of the rod. Modifies it in accordance with the estimated acoustic response (complex reflection coefficient) of the resonator cavities, and writes out the modified rod loads before rerunning PSU-WOPWOP and plotting the output. 
 
-Verify the Python imports and the external solver independently:
+To run this workflow, navigate to the example case directory and execute `fliter_optimize_rod_loads.py` with the default CL arguments:
 
 ```bash
-python -c "import numpy, scipy, matplotlib, h5py, json5, f90nml; print('Python dependencies OK')"
-wopwop3 --help
+cd example_case/rotor_airframe_interaction
+python ../../fliter_optimize_rod_loads.py -plot
 ```
-
-The scripts are not installed as a package. The main script can be called with an
-absolute path from a case directory, as shown below. Scripts that import modules
-from the repository root should be run from the repository root or with the root
-directory on `PYTHONPATH`.
-
-## Basic workflow
-
-1. Prepare an OpenWOPWOP case directory with `cases.nam`, the baseline loading,
-   and the matching patch geometry file.
-2. Copy [sdof_geom_params_example.json5](sdof_geom_params_example.json5) to a
-   case-specific filename and edit its treatment parameters.
-3. Run the main script from that case directory:
-
-   ```bash
-   python /path/to/charm_post/fliter_optimize_rod_loads.py \
-       -loading_fname loading0200.dat \
-       -geometry_fname geometry0200.dat \
-       -resonator_fname sdof_geom_params.json5 \
-       -loading_fname_mod loading0200_mod.dat \
-       -plot \
-       -o 0 4 8
-   ```
-
-4. Inspect the generated OpenWOPWOP results and `saved_params.h5`. The HDF5 file
-   contains the run arguments, derived geometry and filter data, resonator
-   parameters, and both acoustic responses.
-
-The filename `fliter_optimize_rod_loads.py` is intentionally preserved for
-compatibility with the existing scripts; `fliter` is a historical spelling of
-`filter` in this repository.
-
-### What the pipeline does
-
-The main script performs the following operations:
-
-1. Loads the functional loading and patch geometry files.
-2. Detects the span and azimuth coordinates of the geometry and selects the
-	 region described by `r_extents` and `phi_extents`.
-3. Divides the selected region into `N_r * N_phi` patches and assigns each patch
-	 its resonator length set.
-4. Removes the loading's first data component, writes the modified loading file,
-   and runs OpenWOPWOP to establish the baseline response.
-5. Computes each resonator's complex impedance, combines the resonators using the
-   open-area ratio, converts impedance to a reflection response, and applies that
-   response to the selected loading histories with an FFT/IFFT.
-6. Writes the treated loading, runs OpenWOPWOP again, and imports the treated
-   response.
-7. Optionally optimizes resonator radius, lengths, and staggered distributions
-	 with SciPy differential evolution.
-8. Writes `saved_params.h5` and, when requested, treatment geometry plots.
-
-Overall sound pressure levels use a 20 microPa reference. During optimization,
-the objective reduces treated acoustic level relative to baseline while applying
-penalties for invalid volume fractions and radius-to-length ratios.
-
-## Configuration
-
-Start with [sdof_geom_params_example.json5](sdof_geom_params_example.json5):
-
-| Key | Meaning |
-| --- | --- |
-| `phi_extents` | Azimuth limits in degrees. The treatment is applied between these values. |
-| `r_extents` | Normalized span limits, generally between `0` and `1`. |
-| `N_res` | Total resonator count. In the current main workflow, `null` selects all points in the selected region. |
-| `N_r` | Number of radial patch divisions. |
-| `N_phi` | Number of circumferential patch divisions. |
-| `a_bounds` | Minimum and maximum resonator radius in metres for optimization. |
-| `l_bounds` | Minimum and maximum resonator length in metres for optimization. |
-| `OAR` | Open-area ratio used to combine resonator impedances. |
-| `staggered` | Enables the staggered patch treatment and its distribution parameters. |
-| `a` | Resonator radius in metres for a non-optimized run or initial optimization value. |
-| `l` | Nested resonator-length lists in metres, one list per unique impedance patch. |
-| `dist` | Five-element distribution parameters per circumferential section when `staggered` is `true`. |
-| `x0` | Example notation for optimization variables. The main script initializes from `a`, `l`, and `dist` instead. |
-
-### Patch consistency
-
-The selected geometry must contain regularly ordered points that can be divided
-into the requested `N_r` by `N_phi` grid. `N_r * N_phi` is the total number of
-geometric patches. The number of nested lists in `l` is the number of unique
-impedance types. Before running, verify that:
-
-- `N_r` and `N_phi` match the intended geometry discretization.
-- Every length in `l` is positive and uses metres.
-- `l` contains the intended number of unique patch types.
-- `phi_extents` and `r_extents` select at least one geometry point.
-- `dist` contains one five-value list for each circumferential section when
-	staggering is enabled.
 
 ## Command-line reference
 
@@ -183,8 +92,8 @@ python fliter_optimize_rod_loads.py --help
 | `-loading_fname` | `loading0200.dat` | Input functional loading file. |
 | `-geometry_fname` | `geometry0200.dat` | Input patch geometry file. |
 | `-resonator_fname` | `sdof_geom_params.json5` | JSON5 treatment configuration. |
-| `-loading_fname_mod` | `loading0200_mod.dat` | Output loading file written before the OpenWOPWOP run. Ensure `cases.nam` references this file where required. |
-| `-parallel` | off | Runs OpenWOPWOP through `mpirun`. |
+| `-loading_fname_mod` | `loading0200_mod.dat` | Output loading file written before the PSU-WOPWOP run. Ensure `cases.nam` references this file where required. |
+| `-parallel` | off | Runs PSU-WOPWOP through `mpirun`. |
 | `-optimize` | off | Optimizes treatment parameters within the configured bounds. |
 | `-plot` | off | Generates the treatment geometry plots. |
 | `-o`, `--observers` | all | Observer indices to use for plotting; accepts one or more integers. |
@@ -195,19 +104,48 @@ python fliter_optimize_rod_loads.py --help
 the full complex response is applied. If both are supplied, `-mag` takes
 precedence because it is evaluated first in the script.
 
-### Optimization example
+### What the pipeline does
 
-```bash
-python fliter_optimize_rod_loads.py \
-		-optimize \
-		-resonator_fname sdof_geom_params.json5 \
-		-loading_fname_mod loading0200_optimized.dat
-```
+The main script performs the following operations:
 
-The root-level [opt.sh](opt.sh) contains a collection of optimization commands
-for several radial/circumferential and staggered configurations. Update filenames
-and execute it with `bash opt.sh` only after confirming that each referenced case
-file exists and that `cases.nam` points to the selected modified loading file.
+1. Loads the functional loading and patch geometry files.
+2. Detects the span and azimuth coordinates of the geometry and selects the
+	 region described by `r_extents` and `phi_extents`.
+3. Divides the selected region into `N_r * N_phi` patches and assigns each patch
+	 its resonator length set.
+4. Runs PSU-WOPWOP to establish the baseline response.
+5. Computes each resonator's complex impedance and complex reflection coefficient using the 		Zwikker-Kosten TL model. 
+6. Convolves original loads with the complex reflection coefficient.
+7. Writes the modified loading file and reruns PSU-WOPWOP.
+8. Optionally optimizes resonator radius, lengths, and staggered distributions
+	 with SciPy differential evolution.
+9. Processes and writes out results to `saved_params.h5` and, when requested, plots output.
+
+## Configuration
+
+| Key | Meaning |
+| --- | --- |
+| `phi_extents` | Azimuth limits in degrees. The treatment is applied between these values. |
+| `r_extents` | Nondimensional spanwise extents of the treatment, between `0` and `1`. |
+| `N_res` | Total resonator count. In the current main workflow, `null` selects all points in the selected region. |
+| `N_r` | Number of radial patch divisions. |
+| `N_phi` | Number of circumferential patch divisions. |
+| `a_bounds` | Minimum and maximum resonator radius in meters for optimization. |
+| `l_bounds` | Minimum and maximum resonator length in meters for optimization. |
+| `OAR` | Open-area ratio used to combine resonator impedances. |
+| `staggered` | Enables the staggered patch treatment and its distribution parameters. |
+| `a` | Resonator radius in meters for a non-optimized run or initial optimization value. |
+| `l` | Nested resonator-length lists in meters, one list per unique impedance patch. |
+| `dist` | Five-element distribution parameters per circumferential section when `staggered` is `true`. |
+| `x0` | Example notation for optimization variables. The main script initializes from `a`, `l`, and `dist` instead. |
+
+### Patch consistency
+
+The selected geometry must contain regularly ordered points that can be divided
+into the requested `N_r` by `N_phi` grid. `N_r * N_phi` is the total number of
+geometric patches. The number of nested lists in `l` is the number of unique
+impedance types. Before running, verify that:
+
 
 ## Files produced
 
@@ -240,8 +178,6 @@ Use a copy of the configuration when the original file must remain unchanged.
 
 ### Standalone utilities
 
-- [filter_rod_loads.py](filter_rod_loads.py): older hard-coded filtering workflow
-	for a single case and SDOF geometry configuration.
 - [modify_rod_loads.py](modify_rod_loads.py): simple loading-file modification
 	utility that zeros the first loading component.
 - [utilities/convert_compact_loading.py](utilities/convert_compact_loading.py):
@@ -264,42 +200,3 @@ Use a copy of the configuration when the original file must remain unchanged.
 The post-processing scripts do not share a common CLI. Many define case paths and
 observer selections near the top of the file, so inspect and update those values
 before running them.
-
-## Troubleshooting
-
-### `ModuleNotFoundError`
-
-Activate the environment used to install the dependencies and run the command
-from the repository root. If importing a script from another directory, add this
-repository to `PYTHONPATH`.
-
-### `FileNotFoundError` for loading, geometry, or JSON5 files
-
-The main script resolves these names relative to the current working directory.
-Change into the case directory first, or pass paths that are valid from the
-directory where the command is launched.
-
-### `wopwop3: command not found`
-
-Install OpenWOPWOP and add its executable directory to `PATH`. For `-parallel`,
-also verify `mpirun` and the MPI installation.
-
-### OpenWOPWOP uses the wrong loading file
-
-The script writes the file named by `-loading_fname_mod`, but OpenWOPWOP follows
-the references in `cases.nam`. Update the relevant namelist entry before running.
-
-### No points are selected or patch processing fails
-
-Check the azimuth and normalized span limits, the geometry ordering, and the
-`N_r`/`N_phi` values. The selected geometry must contain regularly arranged radial
-and circumferential points compatible with the requested patch grid.
-
-## Reproducibility notes
-
-- Record the exact input loading, geometry, `cases.nam`, and JSON5 configuration
-	files for each study.
-- Preserve the generated `saved_params.h5` and modified loading file together.
-- Record the OpenWOPWOP executable version and Python environment packages.
-- Run one configuration per case directory when possible, since generated files
-	such as `saved_params.h5` and the modified loading file are overwritten.

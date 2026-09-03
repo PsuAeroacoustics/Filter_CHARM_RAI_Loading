@@ -207,3 +207,6 @@ marimo/_lsp/
 __marimo__/
 
 filter_rod_loads.py
+.python-version
+modify_rod_loads.py
+opt.sh

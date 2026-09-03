@@ -1,0 +1,6 @@
+[submodule "dependencies/pyWopwop"]
+	path = dependencies/pyWopwop
+	url = https://github.com/OpenWopwop/pyWopwop.git
+[submodule "dependencies/pyResonator"]
+	path = dependencies/pyResonator
+	url = https://github.com/PsuAeroacoustics/pyResonator.git

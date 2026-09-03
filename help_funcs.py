@@ -2,8 +2,8 @@
 import numpy as np
 import os
 import h5py
-from dependencies.pyWopwop.wopwop import *  
-from dependencies.pyWopwop.wopwop_io import *  
+from dependencies.pyWopwop.wopwop_in import *  
+from dependencies.pyWopwop.wopwop_out import *  
 from res_funcs import *
 import subprocess
 from scipy.optimize import differential_evolution
@@ -128,8 +128,6 @@ def process_patch_geometry(saved_params,res_params):
 
     point_filt_ind = selected_ind[sorted_ind][ind.reshape(N_patches_tot,N_r_patch*N_phi_patch)]
     patch_filt_ind = np.ones(N_patches_tot,dtype=bool)
-
-
 
     saved_params.update({'phi':phi,'r':r,'V':V,'patch_types':patch_types,'point_filt_ind':point_filt_ind,'A_patch':A_patch,'A_s':A_s,'patch_filt_ind':patch_filt_ind,'N_r_patch':N_r_patch,'N_phi_patch':N_phi_patch,'N_patches_tot':N_patches_tot,'N_patches':N_patches,'N_pnts_r':N_pnts_r,'N_pnts_phi':N_pnts_phi})
 
