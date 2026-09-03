@@ -161,7 +161,7 @@ for mic_itr in range(len(args.mics)):
     for case_itr,case in enumerate(exp_cases):
         ax[mic_itr,0].plot(exp_data[case]['t']/exp_data[case]['t'][-1],exp_data[case]['xn_avg'][mic_itr],c=np.roll(default_colors,-case_itr)[0], linestyle=np.roll(linestyle,-case_itr)[0], label=case)
     for case_itr,case in enumerate(charm_cases):
-        ax[mic_itr,0].plot(charm_data[case]['function_values'][mic_itr,0,:,0]/charm_data[case]['function_values'][mic_itr,0,-1,0],np.roll(charm_data[case]['function_values'][mic_itr,0,:,-1],-114),c=np.roll(default_colors,-case_itr)[3])
+        ax[mic_itr,0].plot(charm_data[case]['function_values'][mic_itr,0,:,0]/charm_data[case]['function_values'][mic_itr,0,-1,0],np.roll(charm_data[case]['function_values'][mic_itr,0,:,-1],-100),c=np.roll(default_colors,-case_itr)[3])
     ax[mic_itr,0].set(xlim = [0,1],ylim = [None,None],title =title[mic_itr])
     if mic_itr !=len(args.mics)-1:
         ax[mic_itr,0].set_xticklabels([])
@@ -187,7 +187,7 @@ fig, ax = plt.subplots(len(args.mics),2,figsize = figsize)
 plt.subplots_adjust(left=0.125,right = 0.95,top = 0.95,bottom=0.125,hspace = 0.3,wspace = 0.3)
 for mic_itr in range(len(args.mics)):
     ax[mic_itr,0].plot(exp_data[exp_cases[0]]['t']/exp_data[exp_cases[0]]['t'][-1],np.roll(dp[:,mic_itr],-np.round(t_shift[1]/exp_data[exp_cases[1]]['t'][1])))
-    ax[mic_itr,0].plot(charm_data[charm_cases[0]]['function_values'][mic_itr,0,:,0]/charm_data[charm_cases[0]]['function_values'][mic_itr,0,-1,0],np.roll((charm_data[charm_cases[1]]['function_values']-charm_data[charm_cases[0]]['function_values'])[mic_itr,0,:,-1],-114))
+    ax[mic_itr,0].plot(charm_data[charm_cases[0]]['function_values'][mic_itr,0,:,0]/charm_data[charm_cases[0]]['function_values'][mic_itr,0,-1,0],np.roll((charm_data[charm_cases[1]]['function_values']-charm_data[charm_cases[0]]['function_values'])[mic_itr,0,:,-1],-100),linestyle = '-.')
     ax[mic_itr,0].set(xlim = [0,1],ylim = [-4,4],title =title[mic_itr])
     if mic_itr !=len(args.mics)-1:
         ax[mic_itr,0].set_xticklabels([])

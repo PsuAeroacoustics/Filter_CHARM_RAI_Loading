@@ -219,8 +219,8 @@ def apply_treatment(saved_params,res_params):
     # ax[-1].set_xlim([0,5e3])
     # # ax[-1].set_ylim([-5, 5])
 
-
     filt_resp = get_filt_resp(saved_params['Z_smeared'])
+    # filt_resp = get_filt_resp(1j*np.imag(saved_params['Z_smeared']))
     if saved_params['mag']:
         filt_resp = np.abs(filt_resp)
     elif saved_params['phase']:

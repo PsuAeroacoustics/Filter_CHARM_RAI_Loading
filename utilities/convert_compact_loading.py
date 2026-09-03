@@ -8,10 +8,10 @@ sys.path.insert(0,os.path.join(os.path.dirname(os.path.dirname(__file__)),'depen
 
 from pyWopwop.wopwop import *  
 from pyWopwop.wopwop_io import *  
-case = 'quickROD.1PSU-WOPWOP_HEMI_LOW_PHI1_NR5_ROD_ONLY_SINGLE_POINT_OPT'
+case = 'quickROD.1PSU-WOPWOP_HEMI_LOW_PHI1_NR5_ROD_ONLY_COMPACT'
 
 # loading data file name
-loading_fname = 'loading0200_sdof_dist_oar15.dat'
+loading_fname = 'loading0200.dat'
 # patch data file name
 geometry_fname = 'geometry0200.dat'
 
